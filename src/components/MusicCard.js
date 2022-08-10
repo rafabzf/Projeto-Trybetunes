@@ -1,26 +1,37 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Loading from './Loading';
-import { addSong } from '../services/favoriteSongsAPI';
+import { addSong, getFavoriteSongs } from '../services/favoriteSongsAPI';
 
 class MusicCard extends Component {
   state = {
     loadingMessage: false,
-    isCheck: false,
+    favoriteMusics: [],
+  }
+
+  async componentDidMount() {
+    this.setState({ loadingMessage: true });
+    const abc = await getFavoriteSongs();
+    this.setState({ loadingMessage: false, favoriteMusics: abc });
   }
 
   handleChange = async ({ target }) => {
     const { name } = target;
-    const response = target.type === 'checkbox' ? target.checked : target.response;
-    this.setState({ loadingMessage: true });
-    const { trackId } = this.props;
-    await addSong(trackId);
-    this.setState({ loadingMessage: false, [name]: response, isCheck: true });
+    const value = target.type === 'checkbox' ? target.checked : target.response;
+    if (target.checked) {
+      this.setState({ loadingMessage: true });
+      const { musicInfo } = this.props;
+      await addSong(musicInfo);
+      const abc = await getFavoriteSongs();
+      this.setState({ loadingMessage: false, [name]: value, favoriteMusics: abc });
+    }
   }
 
   render() {
-    const { musics, trackId } = this.props;
-    const { loadingMessage, isCheck } = this.state;
+    const { musicInfo } = this.props;
+    const { musics, trackId } = musicInfo;
+    const { loadingMessage, favoriteMusics } = this.state;
+    console.log(musicInfo);
 
     return (
       <div>
@@ -43,8 +54,8 @@ class MusicCard extends Component {
                   <input
                     type="checkbox"
                     name="checked"
-                    checked={ isCheck }
-                    onClick={ this.handleClick }
+                    checked={ favoriteMusics.some((favoriteMusic) => (
+                      favoriteMusic.trackId === musicInfo.trackId)) }
                     onChange={ this.handleChange }
                     data-testid={ `checkbox-music-${trackId}` }
                   />
@@ -59,8 +70,10 @@ class MusicCard extends Component {
 }
 
 MusicCard.propTypes = {
-  musics: PropTypes.string.isRequired,
-  trackId: PropTypes.number.isRequired,
+  musicInfo: PropTypes.arrayOf(PropTypes.shape({
+    musics: PropTypes.string,
+    trackId: PropTypes.number,
+  })).isRequired,
 };
 
 export default MusicCard;

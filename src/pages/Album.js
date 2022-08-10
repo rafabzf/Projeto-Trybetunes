@@ -52,7 +52,11 @@ class Album extends React.Component {
                 { music.trackName }
               </h4>
               <img src={ music.artworkUrl60 } alt={ music.trackId } />
-              <MusicCard musics={ music.previewUrl } trackId={ music.trackId } />
+              <MusicCard
+                musicInfo={ music }
+                // musics={ music.previewUrl }
+                // trackId={ music.trackId }
+              />
             </div>
           ))
         }
